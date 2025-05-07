@@ -1,0 +1,41 @@
+/* In your index.css or global CSS file */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .input {
+    @apply appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm;
+  }
+  
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+  
+  .btn-primary {
+    @apply text-white bg-primary-600 hover:bg-primary-700 focus:ring-primary-500;
+  }
+  
+  .btn-secondary {
+    @apply text-gray-700 bg-white border-gray-300 hover:bg-gray-50 focus:ring-primary-500;
+  }
+  
+  .card {
+    @apply bg-white rounded-lg shadow overflow-hidden;
+  }
+  
+  .card-body {
+    @apply px-4 py-5 sm:p-6;
+  }
+  
+  .section {
+    @apply py-12 sm:py-16 lg:py-20;
+  }
+  
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}
