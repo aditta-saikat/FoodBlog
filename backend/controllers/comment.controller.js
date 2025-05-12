@@ -63,11 +63,40 @@ exports.deleteComment = async (req, res) => {
       $pull: { comments: comment._id }
     });
 
-    await comment.remove();
+    await comment.deleteOne();
 
     res.status(200).json({ message: 'Comment deleted' });
   } catch (err) {
     console.error('Error deleting comment:', err.message);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
+// Update comment
+exports.updateComment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { content } = req.body;
+
+    if (!content) {
+      return res.status(400).json({ message: 'Content is required' });
+    }
+
+    const comment = await Comment.findById(id);
+    if (!comment) return res.status(404).json({ message: 'Comment not found' });
+
+    if (comment.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    comment.content = content;
+    await comment.save();
+
+    await comment.populate('userId', 'username avatarUrl');
+
+    res.status(200).json({ message: 'Comment updated', comment });
+  } catch (err) {
+    console.error('Error updating comment:', err.message);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };

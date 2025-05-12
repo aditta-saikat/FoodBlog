@@ -129,9 +129,9 @@ const ReviewCard = ({
             {review.tags.map(tag => (
               <span
                 key={tag}
-                className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full"
+                className="bg-primary-500 text-white font-semibold text-xs px-2 py-1 rounded-full"
               >
-                #{tag}
+                {tag}
               </span>
             ))}
           </div>
