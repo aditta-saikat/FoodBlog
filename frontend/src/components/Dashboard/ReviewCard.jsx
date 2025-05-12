@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, MessageCircle, Share2, Edit, Trash2, Star, Image, Calendar, MapPin } from 'lucide-react';
-import { getCommentsByBlog, createComment, deleteComment } from '../../lib/api/Comment';
+import { getCommentsByBlog } from '../../lib/api/Comment';
 import { toggleLike, getLikesCount, hasLiked } from '../../lib/api/Like';
 
 const ReviewCard = ({

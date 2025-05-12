@@ -52,11 +52,12 @@ export const ReviewDetails = () => {
       try {
         setLoading(true);
         const data = await getBlogById(id);
+        const newHasLiked = await hasLiked(id);
         console.log("API Response for Review:", data);
         setReview(data);
         setComments(data.comments || []);
         setLikeCount(data.totalLikes || 0);
-        setHasUserLiked(data.hasLiked || false);
+        setHasUserLiked(newHasLiked || false);
         setLoading(false);
       } catch (err) {
         console.error("Error fetching review details:", err);
@@ -71,13 +72,13 @@ export const ReviewDetails = () => {
 
   const handlePrevImage = () => {
     setCurrentImageIndex((prevIndex) =>
-      prevIndex === 0 ? review.images.length - 1 : prevIndex - 1
+      prevIndex === 0 ? review.images.length - 1 : prevIndex - 1,
     );
   };
 
   const handleNextImage = () => {
     setCurrentImageIndex((prevIndex) =>
-      prevIndex === review.images.length - 1 ? 0 : prevIndex + 1
+      prevIndex === review.images.length - 1 ? 0 : prevIndex + 1,
     );
   };
 
@@ -94,6 +95,8 @@ export const ReviewDetails = () => {
   };
 
   const handleDeleteComment = async (commentId) => {
+    const userConfirmed = window.confirm("Do you want to delete this comment?");
+    if (!userConfirmed) return; // Stop if user cancel
     try {
       await deleteComment(commentId);
       setComments(comments.filter((comment) => comment._id !== commentId));
@@ -113,8 +116,8 @@ export const ReviewDetails = () => {
       const updatedComment = await updateComment(commentId, editContent);
       setComments(
         comments.map((comment) =>
-          comment._id === commentId ? updatedComment : comment
-        )
+          comment._id === commentId ? updatedComment : comment,
+        ),
       );
       setEditCommentId(null);
       setEditContent("");
@@ -162,15 +165,16 @@ export const ReviewDetails = () => {
       day: "numeric",
     });
   };
-  
+
   // Helper function to check if the current user is the comment author
   const isCommentOwner = (comment) => {
     if (!currentUser || !comment || !comment.userId) return false;
-    
+
     // Check all possible ID formats to ensure compatibility
-    const commentUserId = comment.userId._id || comment.userId.id || comment.userId;
+    const commentUserId =
+      comment.userId._id || comment.userId.id || comment.userId;
     const currentUserId = currentUser._id || currentUser.id;
-    
+
     return commentUserId === currentUserId;
   };
 
@@ -399,7 +403,9 @@ export const ReviewDetails = () => {
                     <Heart
                       size={20}
                       className={
-                        hasUserLiked ? "fill-red-500 text-red-500" : ""
+                        hasUserLiked
+                          ? "fill-red-500 text-red-500"
+                          : "text-gray-400"
                       }
                     />
                   </button>
@@ -482,7 +488,7 @@ export const ReviewDetails = () => {
                               </span>
                             </div>
                           </div>
-                          
+
                           {editCommentId === comment._id ? (
                             <div className="flex flex-col space-y-2">
                               <textarea
@@ -498,7 +504,9 @@ export const ReviewDetails = () => {
                                   Cancel
                                 </button>
                                 <button
-                                  onClick={() => handleEditCommentSave(comment._id)}
+                                  onClick={() =>
+                                    handleEditCommentSave(comment._id)
+                                  }
                                   disabled={!editContent.trim()}
                                   className="px-4 py-2 bg-primary-600 text-white rounded-lg font-medium disabled:opacity-50 hover:bg-primary-700 transition-colors"
                                 >
@@ -508,18 +516,24 @@ export const ReviewDetails = () => {
                             </div>
                           ) : (
                             <>
-                              <p className="text-gray-700 mb-3">{comment.content}</p>
-                              
+                              <p className="text-gray-700 mb-3">
+                                {comment.content}
+                              </p>
+
                               {isCommentOwner(comment) && (
                                 <div className="flex justify-end space-x-3 mt-2 border-t border-gray-200 pt-2">
                                   <button
-                                    onClick={() => handleEditCommentStart(comment)}
+                                    onClick={() =>
+                                      handleEditCommentStart(comment)
+                                    }
                                     className="text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors"
                                   >
                                     Edit
                                   </button>
                                   <button
-                                    onClick={() => handleDeleteComment(comment._id)}
+                                    onClick={() =>
+                                      handleDeleteComment(comment._id)
+                                    }
                                     className="text-red-600 hover:text-red-800 font-medium text-sm transition-colors"
                                   >
                                     Delete
