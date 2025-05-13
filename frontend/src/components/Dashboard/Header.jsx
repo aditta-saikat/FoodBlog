@@ -1,6 +1,23 @@
-import { Search, Settings, User } from "lucide-react";
+import { Search, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
-const Header = ({ currentUser, searchTerm, setSearchTerm }) => {
+const Header = ({ searchTerm, setSearchTerm }) => {
+  const navigate = useNavigate();
+  const { currentUser } = useAuth();
+
+  const handleAvatarClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Avatar clicked, currentUser:', currentUser);
+    if (currentUser?._id) {
+      navigate(`/profile/${currentUser._id}`);
+    } else {
+      console.warn('No valid user ID, redirecting to login');
+      navigate('/login');
+    }
+  };
+
   return (
     <div className="bg-primary-700">
       <div className="relative">
@@ -32,25 +49,23 @@ const Header = ({ currentUser, searchTerm, setSearchTerm }) => {
                 </div>
                 <input
                   type="text"
-                  placeholder="Search reviews..."
+                  placeholder="Search by title, tag, author, or rating..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-transparent rounded-lg bg-white bg-opacity-20 text-white placeholder-white placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-40"
                 />
               </div>
 
-              {/* Settings Button */}
-              <button className="bg-white bg-opacity-20 p-2 rounded-lg hover:bg-opacity-30 transition-all">
-                <Settings size={20} className="text-white" />
-              </button>
-
               {/* Avatar */}
-              <div className="flex items-center gap-2 bg-white bg-opacity-20 py-1 px-3 rounded-lg">
+              <div
+                className="flex items-center gap-2 bg-white bg-opacity-20 py-1 px-3 rounded-lg cursor-pointer hover:bg-opacity-30 transition-all"
+                onClick={handleAvatarClick}
+              >
                 <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center overflow-hidden">
                   {currentUser?.avatarUrl ? (
                     <img
                       src={currentUser.avatarUrl}
-                      alt={currentUser.username || "User"}
+                      alt={currentUser?.username || "User"}
                       className="w-full h-full object-cover"
                     />
                   ) : (
