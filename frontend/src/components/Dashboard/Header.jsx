@@ -10,8 +10,8 @@ const Header = ({ searchTerm, setSearchTerm }) => {
     e.preventDefault();
     e.stopPropagation();
     console.log('Avatar clicked, currentUser:', currentUser);
-    if (currentUser?._id) {
-      navigate(`/profile/${currentUser._id}`);
+    if (currentUser?.id) {
+      navigate(`/profile/${currentUser.id}`);
     } else {
       console.warn('No valid user ID, redirecting to login');
       navigate('/login');

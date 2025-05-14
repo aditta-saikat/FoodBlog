@@ -119,18 +119,14 @@ const Dashboard = () => {
   };
 
   const filteredReviews = reviews.filter((review) => {
-    if (
-      searchTerm &&
-      !review.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      !review.content.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      !review.restaurant.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      !review.tags.some((tag) =>
-        tag.toLowerCase().includes(searchTerm.toLowerCase()),
-      )
-    ) {
-      return false;
-    }
-    return true;
+    if (!searchTerm) return true;
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      review.title.toLowerCase().includes(searchLower) ||
+      review.tags.some((tag) => tag.toLowerCase().includes(searchLower)) ||
+      review.author.username.toLowerCase().includes(searchLower) ||
+      review.rating.toString().includes(searchLower)
+    );
   });
 
   return (
