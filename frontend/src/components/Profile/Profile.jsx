@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { User, Edit, Trash2, ArrowLeft, X } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { getUser, updateUser, deleteUser } from "../../lib/api/User";
+import { getUser, updateUser } from "../../lib/api/User";
 import Navbar from "../Navbar/Navbar";
 
 const Profile = () => {
@@ -17,8 +17,9 @@ const Profile = () => {
   const [formData, setFormData] = useState({
     username: "",
     bio: "",
-    avatarUrl: "",
   });
+  const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
@@ -30,8 +31,9 @@ const Profile = () => {
         setFormData({
           username: data.username || "",
           bio: data.bio || "",
-          avatarUrl: data.avatarUrl || "",
         });
+        setImage(null);
+        setImagePreview(data.avatarUrl || "");
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -47,21 +49,81 @@ const Profile = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    setError("");
+  };
+
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    console.log('File input triggered, files:', files);
+    if (files.length === 0) {
+      console.warn('No file selected');
+      setError('Please select an image');
+      return;
+    }
+
+    const file = files[0]; // Single file for profile
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    const validSize = file.size <= 32 * 1024 * 1024; // 32MB
+
+    if (!validTypes.includes(file.type)) {
+      setError('Only JPEG, JPG, or PNG images allowed');
+      console.error('Invalid file type:', file.type);
+      return;
+    }
+    if (!validSize) {
+      setError('Image must be under 32MB');
+      console.error('File too large:', file.size);
+      return;
+    }
+
+    console.log('Valid file selected:', {
+      name: file.name,
+      size: file.size,
+      type: file.type,
+    });
+    setImage(file);
+    setImagePreview(URL.createObjectURL(file));
+    setError("");
   };
 
   const handleUpdate = async (e) => {
     e.preventDefault();
+    if (!formData.username.trim()) {
+      setError('Username is required');
+      return;
+    }
+
     try {
-      const updatedUser = await updateUser(id, {
+      const data = new FormData();
+      data.append('data', JSON.stringify({
         username: formData.username,
         bio: formData.bio,
-        avatarUrl: formData.avatarUrl,
-      });
+      }));
+      if (image) {
+        console.log('Appending image:', {
+          name: image.name,
+          size: image.size,
+          type: image.type,
+        });
+        data.append('image', image);
+      } else {
+        console.warn('No image to append');
+      }
+
+      // Debug FormData content
+      for (let [key, value] of data.entries()) {
+        console.log(`FormData entry: ${key}=`, value);
+      }
+
+      const updatedUser = await updateUser(id, data);
       setUser(updatedUser);
       setIsEditing(false);
       setError("");
+      setImage(null);
+      setImagePreview(updatedUser.avatarUrl || "");
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Failed to update profile');
+      console.error('Update error:', err);
     }
   };
 
@@ -142,9 +204,9 @@ const Profile = () => {
                 {/* Avatar */}
                 <div className="flex-shrink-0">
                   <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center overflow-hidden border-2 border-white border-opacity-40">
-                    {user.avatarUrl ? (
+                    {imagePreview || user.avatarUrl ? (
                       <img
-                        src={user.avatarUrl}
+                        src={imagePreview || user.avatarUrl}
                         alt={user.username}
                         className="w-full h-full object-cover"
                       />
@@ -187,15 +249,14 @@ const Profile = () => {
                       </div>
                       <div>
                         <label className="block text-white opacity-90 text-sm font-medium mb-1">
-                          Avatar URL
+                          Profile Image
                         </label>
                         <input
-                          type="url"
-                          name="avatarUrl"
-                          value={formData.avatarUrl}
-                          onChange={handleInputChange}
-                          className="w-full px-4 py-2 border border-transparent rounded-lg bg-white bg-opacity-20 text-white placeholder-white placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-40"
-                          placeholder="Enter avatar URL"
+                          type="file"
+                          name="image"
+                          accept="image/jpeg,image/jpg,image/png"
+                          onChange={handleImageChange}
+                          className="w-full px-4 py-2 border border-transparent rounded-lg bg-white bg-opacity-20 text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary-600 file:text-white file:hover:bg-primary-700"
                         />
                       </div>
                       {error && (
@@ -211,7 +272,12 @@ const Profile = () => {
                         </button>
                         <button
                           type="button"
-                          onClick={() => setIsEditing(false)}
+                          onClick={() => {
+                            setIsEditing(false);
+                            setImage(null);
+                            setImagePreview(user.avatarUrl || "");
+                            setError("");
+                          }}
                           className="bg-gray-200 text-gray-700 rounded-lg px-4 py-2 font-medium hover:bg-gray-300"
                         >
                           Cancel

@@ -59,9 +59,7 @@ exports.createBlog = async (req, res) => {
 
     if (req.files && req.files.images) {
       const files = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
-      if (files.length < 2 || files.length > 3) {
-        return res.status(400).json({ message: 'Please upload 2 to 3 images' });
-      }
+      
       for (const file of files) {
         if (!file.data || !file.name || !file.mimetype) {
           console.error('Invalid file object:', file);
